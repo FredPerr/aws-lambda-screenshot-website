@@ -7,6 +7,7 @@
 
 ### Invoke the function locally:
 _You may want to use `sudo` if Docker requires it._
+<br/>
 `sam invoke ScreenshotWebsiteFunction -e events/event.json`
 
 ### Deploy the function to Lambda
