@@ -1,21 +1,30 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import Chromium from '@sparticuz/chromium';
+import puppeteer from 'puppeteer-core';
 
-/**
- *
- * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
- * @param {Object} event - API Gateway Lambda Proxy Input Format
- *
- * Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
- * @returns {Object} object - API Gateway Lambda Proxy Output Format
- *
- */
+import { exec } from 'child_process';
+
+async function sh(cmd: string) {
+  return new Promise(function (resolve, reject) {
+    exec(cmd, (err, stdout, stderr) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve({ stdout, stderr });
+      }
+    });
+  });
+}
 
 export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     try {
+        const path = await Chromium.executablePath("/opt/nodejs/node_modules/@sparticuz/chromium/bin")
+        console.debug(path)
+        
         return {
             statusCode: 200,
             body: JSON.stringify({
-                message: 'hello there',
+                message: 'Path: ' + path,
             }),
         };
     } catch (err) {
