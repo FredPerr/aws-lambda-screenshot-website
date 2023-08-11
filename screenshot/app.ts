@@ -15,10 +15,11 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
         if (!event.body)
             throw new Error('You must provide a body (url, width, height, [fullscreen]) to use the function');
 
-        const params = endpoint_scheme.safeParse(JSON.parse(event.body));
-        if (!params.success) throw new Error('Could not parse the parameters given to the function');
+        const request_params = endpoint_scheme.safeParse(JSON.parse(event.body));
 
-        const { url, width, height, fullscreen } = params.data;
+        if (!request_params.success) throw new Error('Could not parse the parameters given to the function');
+
+        const { url, width, height, fullscreen } = request_params.data;
 
         const browser = await puppeteer.launch({
             args: [...Chromium.args],
@@ -31,7 +32,8 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
         });
 
         const page = await browser.newPage();
-        await page.goto(url, { waitUntil: 'networkidle2', timeout: 12000 });
+        const goto_response = await page.goto(url, { waitUntil: 'networkidle2', timeout: 12000 });
+        if (goto_response == null || !goto_response.ok) throw new Error(`Could not reach the website ${url}`);
 
         const screenshot = await page.screenshot({
             type: 'jpeg',
@@ -46,7 +48,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
             body: JSON.stringify(screenshot),
         };
     } catch (err) {
-        console.log(err);
+        console.error(err);
         return {
             statusCode: 500,
             body: JSON.stringify({
