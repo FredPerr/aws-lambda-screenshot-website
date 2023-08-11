@@ -11,11 +11,16 @@ const endpoint_scheme = z.object({
 });
 
 export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+    console.debug(event.body);
     try {
         if (!event.body)
             throw new Error('You must provide a body (url, width, height, [fullscreen]) to use the function');
 
-        const request_params = endpoint_scheme.safeParse(JSON.parse(event.body));
+        const url_encoded_params = decodeURIComponent(event.body);
+        console.debug(event.body);
+        console.debug(url_encoded_params);
+
+        const request_params = endpoint_scheme.safeParse(url_encoded_params);
 
         if (!request_params.success) throw new Error('Could not parse the parameters given to the function');
 
@@ -45,15 +50,14 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
             headers: {
                 'content-type': 'application/octet-stream',
             },
-            body: JSON.stringify(screenshot),
+            body: screenshot.toString(),
         };
     } catch (err) {
         console.error(err);
         return {
             statusCode: 500,
             body: JSON.stringify({
-                message: 'An error occurred while processing your request',
-                error_msg: err ? err : 'Unknown',
+                message: `An error occurred while processing your request: ${err}`,
             }),
         };
     }
