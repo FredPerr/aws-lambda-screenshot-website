@@ -8,7 +8,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
         if (event.queryStringParameters == null)
             throw new Error(
                 'You have to provide the following parameters in your request URL: ' +
-                    Object.keys(DEFAULT_ENDPOINT_PARAMETERS).toString(),
+                Object.keys(DEFAULT_ENDPOINT_PARAMETERS).toString(),
             );
 
         const { url, width, height, fullscreen } = parseUrlToEndpoint(event.queryStringParameters);
@@ -35,9 +35,9 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
         return {
             statusCode: 200,
             headers: {
-                'content-type': 'application/octet-stream',
+                'content-type': 'text/plain',
             },
-            body: screenshot.toString(),
+            body: screenshot.toString('base64'),
         };
     } catch (err) {
         console.error(err);
