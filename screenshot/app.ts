@@ -1,30 +1,17 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import Chromium from '@sparticuz/chromium';
 import puppeteer from 'puppeteer-core';
-import { z } from 'zod';
-
-const endpoint_scheme = z.object({
-    url: z.string().url(),
-    width: z.number().min(300),
-    height: z.number().min(300),
-    fullscreen: z.boolean().optional(),
-});
+import { parseUrlToEndpoint, DEFAULT_ENDPOINT_PARAMETERS } from 'utils/UrlParametersParser';
 
 export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    console.debug(event.body);
     try {
-        if (!event.body)
-            throw new Error('You must provide a body (url, width, height, [fullscreen]) to use the function');
+        if (event.queryStringParameters == null)
+            throw new Error(
+                'You have to provide the following parameters in your request URL: ' +
+                    Object.keys(DEFAULT_ENDPOINT_PARAMETERS).toString(),
+            );
 
-        const url_encoded_params = decodeURIComponent(event.body);
-        console.debug(event.body);
-        console.debug(url_encoded_params);
-
-        const request_params = endpoint_scheme.safeParse(url_encoded_params);
-
-        if (!request_params.success) throw new Error('Could not parse the parameters given to the function');
-
-        const { url, width, height, fullscreen } = request_params.data;
+        const { url, width, height, fullscreen } = parseUrlToEndpoint(event.queryStringParameters);
 
         const browser = await puppeteer.launch({
             args: [...Chromium.args],
@@ -42,7 +29,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
 
         const screenshot = await page.screenshot({
             type: 'jpeg',
-            fullPage: fullscreen ? true : false,
+            fullPage: fullscreen,
         });
 
         return {
