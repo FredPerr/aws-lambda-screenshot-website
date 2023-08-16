@@ -31,10 +31,10 @@ export function parseUrlToEndpoint(urlParameters: APIGatewayProxyEventQueryStrin
     if (width) endpointParameters.width = Number(width);
     else throw new Error(MISSING_PARAMETER_ERROR_MSG.replace('{param}', 'width'));
 
-    if (height) endpointParameters.width = Number(width);
+    if (height) endpointParameters.height = Number(width);
     else throw new Error(MISSING_PARAMETER_ERROR_MSG.replace('{param}', 'height'));
 
-    if (fullscreen) endpointParameters.fullscreen = Boolean(fullscreen);
+    if (fullscreen) endpointParameters.fullscreen = fullscreen === 'true';
     else throw new Error(MISSING_PARAMETER_ERROR_MSG.replace('{param}', 'fullscreen'));
 
     const validatedParameters = ENDPOINT_PARAMETERS_DEFS.safeParse(endpointParameters);
