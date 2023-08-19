@@ -14,7 +14,10 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
         const { url, width, height, fullscreen } = parseUrlToEndpoint(event.queryStringParameters);
 
         const browser = await puppeteer.launch({
-            args: [...Chromium.args],
+            args: [
+                ...Chromium.args,
+                '--user-agent=Mozilla/5.0 (Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/116.0)',
+            ],
             defaultViewport: {
                 width: width,
                 height: height,
@@ -24,7 +27,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
         });
 
         const page = await browser.newPage();
-        const goto_response = await page.goto(url, { waitUntil: 'networkidle2', timeout: 12000 });
+        const goto_response = await page.goto(url, { waitUntil: 'networkidle2', timeout: 16000 });
         if (goto_response == null || !goto_response.ok) throw new Error(`Could not reach the website ${url}`);
 
         const screenshot = await page.screenshot({
